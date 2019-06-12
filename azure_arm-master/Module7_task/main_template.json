@@ -1,0 +1,182 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ContributorId": {
+            "type": "string"
+        },
+        "OwnerId": {
+            "type": "string"
+        },
+        "SecretName": {
+            "type": "string"
+        },
+        "SecretValue": {
+            "type": "securestring"
+        },
+        "AdressPrefix": {
+            "type": "string"
+        },
+        "SubnetAdressPrefix": {
+            "type": "string"
+        },
+        "VnetDdosProtection": {
+            "type": "bool"
+        },
+        "publicIpAddressType": {
+            "type": "string"
+        },
+        "publicIpAddressSku": {
+            "type": "string"
+        },
+        "SAAccountType": {
+            "type": "string"
+        },
+        "SAkind": {
+            "type": "string"
+        },
+        "SAAccessTier": {
+            "type": "string"
+        },
+        "SAHttpsTraffic": {
+            "type": "bool"
+        },
+        "virtualMachineSize": {
+            "type": "string"
+        },
+        "DataDiskSize": {
+            "type": "string"
+        },
+        "sastokenurl":{
+            "type": "securestring"
+        }
+    },
+    "variables": {
+        "git_link": "https://raw.githubusercontent.com/KstKrv/azure_arm/master/Module7_task/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "KeyVaultTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'KeyVault_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "ContributorId": {
+                        "value": "[parameters('ContributorId')]"
+                    },
+                    "OwnerId": {
+                        "value": "[parameters('OwnerId')]"
+                    },
+                    "SecretName": {
+                        "value": "[parameters('SecretName')]"
+                    },
+                    "SecretValue": {
+                        "value": "[parameters('SecretValue')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "NetSATemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'Net_SA_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "AdressPrefix": {
+                        "value": "[parameters('AdressPrefix')]"
+                    },
+                    "SubnetAdressPrefix": {
+                        "value": "[parameters('SubnetAdressPrefix')]"
+                    },
+                    "VnetDdosProtection": {
+                        "value": "[parameters('VnetDdosProtection')]"
+                    },
+                    "publicIpAddressType": {
+                        "value": "[parameters('publicIpAddressType')]"
+                    },
+                    "publicIpAddressSku": {
+                        "value": "[parameters('publicIpAddressSku')]"
+                    },
+                    "SAAccountType": {
+                        "value": "[parameters('SAAccountType')]"
+                    },
+                    "SAAccessTier": {
+                        "value": "[parameters('SAAccessTier')]"
+                    },
+                    "SAHttpsTraffic": {
+                        "value": "[parameters('SAHttpsTraffic')]"
+                    },
+                    "SAkind": {
+                        "value": "[parameters('SAkind')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "VMTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "KeyVaultTemplate",
+                "NetSATemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'VM_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "virtualMachineSize": {
+                        "value": "[parameters('virtualmachinesize')]"
+                    },
+                    "nicName": {
+                        "value": "[reference('NetSATemplate').outputs.nicName.value]"
+                    },
+                    "SecretName": {
+                        "value": "[parameters('SecretName')]"
+                    },
+                    "SecretValue": {
+                        "value": "[parameters('SecretValue')]"
+                    },
+                    "DataDiskSize":{
+                        "value": "[parameters('DataDiskSize')]"
+                    },
+                    "sastokenurl":{
+                        "value": "[parameters('sastokenurl')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "RecVaultTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+               "VMTemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'RecVault_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "virtualMachineName":{
+                        "value": "[reference('VMTemplate').outputs.virtualMachineName.value]"
+                    }
+                }
+            }
+        }
+    ]
+}

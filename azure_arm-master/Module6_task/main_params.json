@@ -1,0 +1,58 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ContributorId": {
+            "value": "32b08c07-406a-4b71-a101-de28c73741bd"
+        },
+        "OwnerId": {
+            "value": "99a00c7f-5b36-4a7e-a26b-dc9597d7f7b3"
+        },
+        "secretsObject": {
+            "value": {
+                "secrets": [
+                    {
+                        "secretName": "sqladmin",
+                        "secretValue": "SecurePa$$w0rd"
+                    }
+                ]
+            }
+        },
+        "allowAzureIps": {
+            "value": true
+        },
+        "workerSize": {
+            "value": "0"
+        },
+        "workerSizeId": {
+            "value": "0"
+        },
+        "numberOfWorkers": {
+            "value": "1"
+        },
+        "hostingEnvironment": {
+            "value": ""
+        },
+        "sku": {
+            "value": "Standard"
+        },
+        "skuCode": {
+            "value": "S1"
+        },
+        "collation": {
+            "value": "SQL_Latin1_General_CP1_CI_AS"
+        },
+        "maxSizeBytes": {
+            "value": 5368709120
+        },
+        "skuName": {
+            "value": "S0"
+        },
+        "tier": {
+            "value": "Standard"
+        },
+        "zoneRedundant": {
+            "value": false
+        }
+    }
+}

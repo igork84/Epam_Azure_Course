@@ -1,0 +1,29 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetConfig": {
+            "value": {
+                "vnetName": "IKVNetmod4",
+                "vnetAddressPrefix": "10.0.0.0/16",
+                "subnets": [
+                    {
+                        "subnet1Name": "FrontendSubnet",
+                        "subnet1AddressPrefix": "10.0.10.0/24"
+                    },
+                    {
+                        "subnet2Name": "BackendSubnet",
+                        "subnet2AddressPrefix": "10.0.20.0/24"
+                    }
+                ]
+            }
+        },
+        "SAConfig": {
+            "value": {
+                "SAName": "iksamod4",
+                "SAAccountType": "Standard_LRS",
+                "SAKind": "StorageV2"
+            }
+        }
+    }
+}

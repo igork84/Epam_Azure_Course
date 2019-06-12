@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "agentCount": {
+            "type": "int"
+        },
+        "agentVMSize": {
+            "type": "string"
+        },
+        "AppId": {
+            "type": "string"
+        },
+        "AppIdSecret": {
+            "type": "securestring"
+        }
+    },
+    "variables": {
+        "kbsName": "[concat('KBS', uniqueString(resourceGroup().name))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-03-31",
+            "type": "Microsoft.ContainerService/managedClusters",
+            "location": "[resourceGroup().location]",
+            "name": "[variables('kbsName')]",
+            "properties": {
+                "kubernetesVersion": "1.11.3",
+                "dnsPrefix": "[variables('kbsName')]",
+                "agentPoolProfiles": [
+                    {
+                        "name": "agentpool",
+                        "osDiskSizeGB": 35,
+                        "maxPods": 35,
+                        "count": "[parameters('agentCount')]",
+                        "vmSize": "[parameters('agentVMSize')]",
+                        "osType": "Linux",
+                        "storageProfile": "ManagedDisks"
+                    }
+                ],
+                "servicePrincipalProfile": {
+                    "clientId": "[parameters('AppId')]",
+                    "Secret": "[parameters('AppIdSecret')]"
+                },
+                "networkProfile": {
+                    "networkPlugin": "kubenet"
+                }
+            }
+        }
+    ]
+}

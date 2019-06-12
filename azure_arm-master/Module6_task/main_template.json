@@ -1,0 +1,161 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ContributorId": {
+            "type": "string"
+        },
+        "OwnerId": {
+            "type": "string"
+        },
+        "secretsObject": {
+            "type": "secureObject"
+        },
+        "allowAzureIps": {
+            "type": "bool"
+        },
+        "workerSize": {
+            "type": "string"
+        },
+        "workerSizeId": {
+            "type": "string"
+        },
+        "numberOfWorkers": {
+            "type": "string"
+        },
+        "hostingEnvironment": {
+            "type": "string"
+        },
+        "sku": {
+            "type": "string"
+        },
+        "skuCode": {
+            "type": "string"
+        },
+        "collation": {
+            "type": "string"
+        },
+        "maxSizeBytes": {
+            "type": "int"
+        },
+        "skuName": {
+            "type": "string"
+        },
+        "tier": {
+            "type": "string"
+        },
+        "zoneRedundant": {
+            "type": "bool"
+        }
+    },
+    "variables": {
+        "git_link": "https://raw.githubusercontent.com/KstKrv/azure_arm/master/Module6_task/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "KeyvaultTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'keyvault_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "ContributorId": {
+                        "value": "[parameters('ContributorId')]"
+                    },
+                    "OwnerId": {
+                        "value": "[parameters('OwnerId')]"
+                    },
+                    "secretsObject": {
+                        "value": "[parameters('secretsObject')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "SQLTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "KeyvaultTemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'SQL_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "allowAzureIps": {
+                        "value": "[parameters('allowAzureIps')]"
+                    },
+                    "collation": {
+                        "value": "[parameters('collation')]"
+                    },
+                    "maxSizeBytes": {
+                        "value": "[parameters('maxSizeBytes')]"
+                    },
+                    "skuName": {
+                        "value": "[parameters('skuName')]"
+                    },
+                    "tier": {
+                        "value": "[parameters('tier')]"
+                    },
+                    "zoneRedundant": {
+                        "value": "[parameters('zoneRedundant')]"
+                    },
+                    "secretsObject":{
+                        "value": "[parameters('secretsObject')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "WebTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "SQLTemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'Web_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "workerSize": {
+                        "value": "[parameters('workerSize')]"
+                    },
+                    "workerSizeId": {
+                        "value": "[parameters('workerSizeId')]"
+                    },
+                    "numberOfWorkers": {
+                        "value": "[parameters('numberOfWorkers')]"
+                    },
+                    "hostingEnvironment": {
+                        "value": "[parameters('hostingEnvironment')]"
+                    },
+                    "sku": {
+                        "value": "[parameters('sku')]"
+                    },
+                    "skuCode": {
+                        "value": "[parameters('skuCode')]"
+                    },
+                    "secretsObject": {
+                        "value": "[parameters('secretsObject')]"
+                    },
+                    "databaseName":{
+                        "value": "[reference('SQLTemplate').outputs.databaseName.value]"
+                    },
+                    "serverName":{
+                        "value": "[reference('SQLTemplate').outputs.serverName.value]"
+                    }
+                }
+            }
+        }
+    ]
+}

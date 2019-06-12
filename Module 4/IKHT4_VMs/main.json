@@ -1,0 +1,65 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetConfig": {
+            "type": "object"
+        },
+        "SAConfig": {
+            "type": "object"
+        },
+        "containerSasToken": {
+             "type": "string" 
+        }
+    },
+    "variables": {
+        "StorageAccName": "[tolower(concat(resourceGroup().name, uniqueString(resourceGroup().id)))]",
+        "get_link": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "[variables('StorageAccName')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(uri(variables('get_link'), 'sadeploy.json'), parameters('containerSasToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SAConfig": {
+                        "value": "[parameters('SAConfig')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "[parameters('vnetConfig').vnetName]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(uri(variables('get_link'), 'vnet2subnets.json'), parameters('containerSasToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "vnetConfig": {
+                        "value": "[parameters('vnetConfig')]"
+                    }
+                }
+            }
+        }        
+    ],
+    "outputs": {
+        "storageAccountName": {
+            "type": "string",
+            "value": "[parameters('SaConfig').SAName]"
+          },
+        "vnetConfig": {
+            "type": "string",
+            "value": "[parameters('vnetConfig').vnetName]"
+        }
+    }
+}

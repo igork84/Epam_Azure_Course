@@ -1,0 +1,82 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workerSize": {
+            "type": "string"
+        },
+        "workerSizeId": {
+            "type": "string"
+        },
+        "numberOfWorkers": {
+            "type": "string"
+        },
+        "hostingEnvironment": {
+            "type": "string"
+        },
+        "sku": {
+            "type": "string"
+        },
+        "skuCode": {
+            "type": "string"
+        },
+        "secretsObject": {
+            "type": "secureObject"
+        },
+        "databaseName": {
+            "type": "string"
+        },
+        "serverName": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "App1PlanName": "[concat(resourceGroup().name, 'AppPlan')]",
+        "WebApp1Name": "[concat('WebApp', uniqueString(resourceGroup().id))]",
+        "ConnectionString": "[concat('Database=', parameters('databaseName'), ';Data Source=', concat(parameters('serverName'),'.database.windows.net'), ';User Id=', parameters('secretsObject').secrets[0].secretName ,'@', parameters('serverName') ,';Password=',parameters('secretsObject').secrets[0].secretValue)]"
+    },
+    "resources":  [
+        {
+            "apiVersion": "2016-03-01",
+            "name": "[variables('App1PlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[resourceGroup().location]",
+            "kind": "",
+            "properties": {
+                "name": "[variables('App1PlanName')]",
+                "workerSize": "[parameters('workerSize')]",
+                "workerSizeId": "[parameters('workerSizeId')]",
+                "numberOfWorkers": "[parameters('numberOfWorkers')]",
+                "reserved": false,
+                "hostingEnvironment": "[parameters('hostingEnvironment')]"
+            },
+            "sku": {
+                "Tier": "[parameters('sku')]",
+                "Name": "[parameters('skuCode')]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2016-08-01",
+            "kind": "app",
+            "name": "[variables('WebApp1Name')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[variables('App1PlanName')]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('App1PlanName'))]",
+                "siteConfig": {
+                    "appSettings": [],
+                    "connectionStrings": [
+                        {
+                            "name": "MyDBConnection",
+                            "ConnectionString": "[variables('ConnectionString')]",
+                            "type": "SQLAzure"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

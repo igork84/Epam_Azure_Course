@@ -1,0 +1,125 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workerSize": {
+            "type": "string"
+        },
+        "workerSizeId": {
+            "type": "string"
+        },
+        "numberOfWorkers": {
+            "type": "string"
+        },
+        "hostingEnvironment": {
+            "type": "string"
+        },
+        "sku": {
+            "type": "string"
+        },
+        "skuCode": {
+            "type": "string"
+        },
+        "seclocation": {
+            "type": "string"
+        },
+        "linuxFxVersion": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "git_link": "https://raw.githubusercontent.com/KstKrv/azure_arm/master/Module5_task/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "AppPlans",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'AppPlans_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "workerSize": {
+                        "value": "[parameters('workerSize')]"
+                    },
+                    "workerSizeId": {
+                        "value": "[parameters('workerSizeId')]"
+                    },
+                    "numberOfWorkers": {
+                        "value": "[parameters('numberOfWorkers')]"
+                    },
+                    "hostingEnvironment": {
+                        "value": "[parameters('hostingEnvironment')]"
+                    },
+                    "sku": {
+                        "value": "[parameters('sku')]"
+                    },
+                    "skuCode": {
+                        "value": "[parameters('skuCode')]"
+                    },
+                    "seclocation": {
+                        "value": "[parameters('seclocation')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "WebApps",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "AppPlans"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'WebApps_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "App1PlanName": {
+                        "value": "[reference('AppPlans').outputs.App1PlanName.value]"
+                    },
+                    "App2PlanName": {
+                        "value": "[reference('AppPlans').outputs.App2PlanName.value]"
+                    },
+                    "linuxFxVersion": {
+                        "value": "[parameters('linuxFxVersion')]"
+                    },
+                    "seclocation": {
+                        "value": "[parameters('seclocation')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "TrafficManager",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "WebApps"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'TrafficManager_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "WebApp1Name": {
+                        "value": "[reference('WebApps').outputs.WebApp1Name.value]"
+                    },
+                    "WebApp2Name": {
+                        "value": "[reference('WebApps').outputs.WebApp2Name.value]"
+                    },
+                    "seclocation": {
+                        "value": "[parameters('seclocation')]"
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,68 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "App1PlanName": {
+            "type": "string"
+        },
+        "App2PlanName": {
+            "type": "string"
+        },
+        "linuxFxVersion": {
+            "type": "string"
+        },
+        "seclocation": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "WebApp1Name": "[concat(resourceGroup().name, '1WebApp', uniqueString(resourceGroup().id))]",
+        "WebApp2Name": "[concat(resourceGroup().name, '2WebApp', uniqueString(resourceGroup().id))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2016-08-01",
+            "kind": "app",
+            "name": "[variables('WebApp1Name')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "RepoUrl": "https://github.com/KstKrv/Module5_westheu.git",
+                "branch": "master",
+                "IsManualIntegration": true,
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('App1PlanName'))]",
+                "siteConfig": {
+                    "linuxFxVersion": "[parameters('linuxFxVersion')]",
+                    "alwaysOn": true
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2016-08-01",
+            "kind": "app",
+            "name": "[variables('WebApp2Name')]",
+            "location": "[parameters('seclocation')]",
+            "properties": {
+                "RepoUrl": "https://github.com/KstKrv/Module5_northeu.git",
+                "branch": "master",
+                "IsManualIntegration": true,
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('App2PlanName'))]",
+                "siteConfig": {
+                    "linuxFxVersion": "[parameters('linuxFxVersion')]",
+                    "alwaysOn": true
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "WebApp1Name": {
+            "type": "string",
+            "value": "[variables('WebApp1Name')]"
+        },
+        "WebApp2Name": {
+            "type": "string",
+            "value": "[variables('WebApp2Name')]"
+        }
+    }
+}

@@ -1,0 +1,49 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "agentCount": {
+            "type": "int"
+        },
+        "agentVMSize": {
+            "type": "string"
+        },
+        "AppId": {
+            "type": "string"
+        },
+        "AppIdSecret": {
+            "type": "securestring"
+        }
+    },
+    "variables": {
+        "git_link": "https://raw.githubusercontent.com/KstKrv/azure_arm/master/Module8_task/"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "name": "kbs_template",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'kbs_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "agentCount": {
+                        "value": "[parameters('agentCount')]"
+                    },
+                    "agentVMSize":{
+                        "value": "[parameters('agentVMSize')]"
+                    },
+                    "AppId":{
+                        "value": "[parameters('AppId')]"
+                    },
+                    "AppIdSecret":{
+                        "value": "[parameters('AppIdSecret')]"
+                    }
+                }
+            }
+        }
+    ]
+}

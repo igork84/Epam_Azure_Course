@@ -1,0 +1,39 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "resources": [
+        {
+        "apiVersion": "2017-05-10",
+        "name": "linkedTemplate",
+        "type": "Microsoft.Resources/deployments",
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri":"https://raw.githubusercontent.com/KstKrv/azure_arm/master/task2/vnet_template.json",
+                "contentVersion":"1.0.0.0"
+            },
+            "parametersLink": {
+                "uri":"https://raw.githubusercontent.com/KstKrv/azure_arm/master/task2/vnet_template_params.json",
+                "contentVersion":"1.0.0.0"
+            }
+        }
+    },
+    {
+        "apiVersion": "2017-05-10",
+        "name": "linkedTemplate1",
+        "type": "Microsoft.Resources/deployments",
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri":"https://raw.githubusercontent.com/KstKrv/azure_arm/master/task2/storage_acc_template.json",
+                "contentVersion":"1.0.0.0"
+            },
+            "parametersLink": {
+                "uri":"https://raw.githubusercontent.com/KstKrv/azure_arm/master/task2/storage_acc_template_params.json",
+                "contentVersion":"1.0.0.0"
+            }
+        }
+    }
+    ]
+}    

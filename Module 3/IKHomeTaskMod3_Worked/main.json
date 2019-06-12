@@ -1,0 +1,112 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetName": {
+            "type": "string"
+        },
+        "vnetAddressPrefix": {
+            "type": "string"
+        },
+        "subnet1AddressPrefix": {
+            "type": "string"
+        },
+        "subnet1Name":{
+            "type": "string"
+        },
+        "subnet2AddressPrefix": {
+            "type": "string"
+        },
+        "subnet2Name":{
+            "type": "string"
+        },
+        "SAAccountName": {
+            "type": "string"
+        },
+        "SAAccountType": {
+            "type": "string"
+        },
+        "SAkind": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "StorageAccName": "[tolower(concat(resourceGroup().name, uniqueString(resourceGroup().id)))]",
+        "get_link": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "[variables('StorageAccName')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('get_link'), 'sadeploy.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SAAccountName": {
+                        "value": "[parameters('SAAccountName')]"
+                    },
+                    "SAAccountType": {
+                        "value": "[parameters('SAAccountType')]"
+                    },
+                    "SAKind": {
+                        "value": "[parameters('SAkind')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "[parameters('vnetName')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('get_link'), 'vnet2subnets.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "vnetName": {
+                        "value": "[parameters('vnetName')]"
+                    },
+                    "vnetAddressPrefix": {
+                        "value": "[parameters('vnetAddressPrefix')]"
+                    },
+                    "Subnet1AddressPrefix": {
+                        "value": "[parameters('subnet1AddressPrefix')]"
+                    },
+                    "Subnet1Name": {
+                        "value": "[parameters('subnet1Name')]"
+                    },
+                    "Subnet2AddressPrefix": {
+                        "value": "[parameters('subnet2AddressPrefix')]"
+                    },
+                    "Subnet2Name": {
+                        "value": "[parameters('subnet2Name')]"
+                    }
+                }
+            }
+        }        
+    ],
+    "outputs": {
+        "storageAccountName": {
+            "type": "string",
+            "value": "[parameters('SAAccountName')]"
+          },
+        "vnetName": {
+            "type": "string",
+            "value": "[parameters('vnetName')]"
+        },
+        "subnet1Name": {
+            "type": "string",
+            "value": "[parameters('subnet1Name')]"
+        },
+        "subnet2Name": {
+            "type": "string",
+            "value": "[parameters('subnet2Name')]"
+        }
+    }
+}

@@ -1,0 +1,89 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "secretsObject": {
+            "type": "secureObject"
+        },
+        "allowAzureIps": {
+            "type": "bool"
+        },
+        "zoneRedundant": {
+            "type": "bool"
+        },
+        "tier": {
+            "type": "string"
+        },
+        "skuName": {
+            "type": "string"
+        },
+        "maxSizeBytes": {
+            "type": "int"
+        },
+        "collation": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "serverName": "[concat('serv', uniqueString(resourceGroup().name))]",
+        "databaseName": "[concat(variables('serverName'), '_db')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "name": "[variables('serverName')]",
+            "properties": {
+                "administratorLogin": "[parameters('secretsObject').secrets[0].secretName]",
+                "administratorLoginPassword": "[parameters('secretsObject').secrets[0].secretValue]",
+                "version": "12.0"
+            },
+            "resources": [
+                {
+                    "condition": "[parameters('allowAzureIps')]",
+                    "apiVersion": "2015-05-01-preview",
+                    "type": "firewallRules",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+                    ],
+                    "name": "AllowAllWindowsAzureIps",
+                    "properties": {
+                        "endIpAddress": "0.0.0.0",
+                        "startIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2017-03-01-preview",
+            "location": "[resourceGroup().location]",
+            "name": "[concat(variables('serverName'), '/', variables('databaseName'))]",
+            "dependsOn": [
+                "[variables('serverName')]"
+            ],
+            "properties": {
+                "collation": "[parameters('collation')]",
+                "maxSizeBytes": "[parameters('maxSizeBytes')]",
+                "zoneRedundant": "[parameters('zoneRedundant')]",
+                "licenseType": ""
+            },
+            "sku": {
+                "name": "[parameters('skuName')]",
+                "tier": "[parameters('tier')]"
+            }
+        }
+    ],
+    "outputs": {
+        "databaseName": {
+            "type": "string",
+            "value": "[variables('databaseName')]"
+        },
+        "serverName": {
+            "type": "string",
+            "value": "[variables('serverName')]"
+        }
+    }
+}

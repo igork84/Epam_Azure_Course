@@ -1,0 +1,44 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SAAccountType": {
+            "type": "string"
+        },
+        "SAkind": {
+            "type": "string"
+        },
+        "SAAccessTier": {
+            "type": "string"
+        },
+        "SAHttpsTraffic": {
+            "type": "bool"
+        }
+    },
+    "variables": {
+        "StorageAccName": "[tolower(concat(resourceGroup().name, uniqueString(resourceGroup().id)))]"
+    },
+    "resources": [
+        {
+            "name": "[variables('StorageAccName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "accessTier": "[parameters('SAAccessTier')]",
+                "supportsHttpsTrafficOnly": "[parameters('SAHttpsTraffic')]"
+            },
+            "dependsOn": [],
+            "sku": {
+                "name": "[parameters('SAAccountType')]"
+            },
+            "kind": "[parameters('SAkind')]"
+        }
+    ],
+    "outputs": {
+        "storageAccountName": {
+            "type": "string",
+            "value": "[variables('StorageAccName')]"
+        }
+    }
+}

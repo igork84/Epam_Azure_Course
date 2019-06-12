@@ -1,0 +1,58 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "AdressPrefix": {
+            "value": "10.0.0.0/16"
+        },
+        "SubnetAdressPrefix": {
+            "value": "10.0.0.0/24"
+        },
+        "VnetDdosProtection": {
+            "value": false
+        },
+        "publicIpAddressType": {
+            "value": "dynamic"
+        },
+        "publicIpAddressSku": {
+            "value": "basic"
+        },
+        "ContributorId": {
+            "value": "32b08c07-406a-4b71-a101-de28c73741bd"
+        },
+        "OwnerId": {
+            "value": "99a00c7f-5b36-4a7e-a26b-dc9597d7f7b3"
+        },
+        "secretsObject": {
+            "value": {
+                "secrets": [
+                    {
+                        "secretName": "VMDeploySecretName",
+                        "secretValue": "Pa$$w0rd"
+                    }
+                ]
+            }
+        },
+        "SAAccountType": {
+            "value": "Standard_RAGRS"
+        },
+        "SAkind": {
+            "value": "StorageV2"
+        },
+        "SAAccessTier": {
+            "value": "hot"
+        },
+        "SAHttpsTraffic": {
+            "value": true
+        },
+        "virtualmachinesize": {
+            "value": "Standard_D2s_v3"
+        },
+        "adminUsername": {
+            "value": "azureuser"
+        },
+        "configurationFunction": {
+            "value": "dsc.ps1\\IIS_station"
+        }
+    }
+}

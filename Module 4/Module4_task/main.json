@@ -1,0 +1,174 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "AdressPrefix": {
+            "type": "string"
+        },
+        "SubnetAdressPrefix": {
+            "type": "string"
+        },
+        "VnetDdosProtection": {
+            "type": "bool"
+        },
+        "publicIpAddressType": {
+            "type": "string"
+        },
+        "publicIpAddressSku": {
+            "type": "string"
+        },
+        "ContributorId": {
+            "type": "string"
+        },
+        "OwnerId": {
+            "type": "string"
+        },
+        "secretsObject": {
+            "type": "secureObject"
+        },
+        "SAAccountType": {
+            "type": "string"
+        },
+        "SAkind": {
+            "type": "string"
+        },
+        "SAAccessTier": {
+            "type": "string"
+        },
+        "SAHttpsTraffic": {
+            "type": "bool"
+        },
+        "virtualmachinesize":{
+            "type": "string"
+        },
+        "adminUsername":{
+            "type": "string"
+        },
+        "configurationFunction":{
+            "type": "string"
+        },
+        "sastokenurl":{
+            "type": "string"
+        }
+    },
+    "variables": {
+        "git_link": "https://raw.githubusercontent.com/KstKrv/azure_arm/master/Module4_task/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "NetworkingTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'vnet_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "AdressPrefix": {
+                        "value": "[parameters('AdressPrefix')]"
+                    },
+                    "SubnetAdressPrefix": {
+                        "value": "[parameters('SubnetAdressPrefix')]"
+                    },
+                    "VnetDdosProtection": {
+                        "value": "[parameters('VnetDdosProtection')]"
+                    },
+                    "publicIpAddressType": {
+                        "value": "[parameters('publicIpAddressType')]"
+                    },
+                    "publicIpAddressSku": {
+                        "value": "[parameters('publicIpAddressSku')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "SALinkedTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'storage_acc_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SAAccountType": {
+                        "value": "[parameters('SAAccountType')]"
+                    },
+                    "SAAccessTier": {
+                        "value": "[parameters('SAAccessTier')]"
+                    },
+                    "SAHttpsTraffic": {
+                        "value": "[parameters('SAHttpsTraffic')]"
+                    },
+                    "SAkind": {
+                        "value": "[parameters('SAkind')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "KeyVaultLinkedTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'KeyVault.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "ContributorId": {
+                        "value": "[parameters('ContributorId')]"
+                    },
+                    "OwnerId": {
+                        "value": "[parameters('OwnerId')]"
+                    },
+                    "secretsObject": {
+                        "value": "[parameters('secretsObject')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "VirtMachineLinkedTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "KeyVaultLinkedTemplate",
+                "SALinkedTemplate",
+                "NetworkingTemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'Win2016_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "virtualMachineSize": {
+                        "value": "[parameters('virtualmachinesize')]"
+                    },
+                    "nicName": {
+                        "value": "[reference('NetworkingTemplate').outputs.nicName.value]"
+                    },
+                    "AdminPassword": {
+                        "value": "[reference('KeyVaultLinkedTemplate').outputs.AdminPassword.value]"
+                    },
+                    "adminUsername":{
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "configurationFunction":{
+                        "value": "[parameters('configurationFunction')]"
+                    },
+                    "sastokenurl":{
+                        "value": "[parameters('sastokenurl')]"
+                    }
+                }
+            }
+        }
+    ]
+}

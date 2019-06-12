@@ -1,0 +1,1 @@
+To start deployment run starter.ps1

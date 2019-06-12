@@ -1,0 +1,154 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "AdressPrefix": {
+            "type": "string"
+        },
+        "SubnetAdressPrefix": {
+            "type": "string"
+        },
+        "VnetDdosProtection": {
+            "type": "bool"
+        },
+        "publicIpAddressType": {
+            "type": "string"
+        },
+        "publicIpAddressSku": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "VnetName": "[concat(resourceGroup().name, 'Vnet')]",
+        "SubnetName": "[concat(variables('VnetName'), 'Subnet')]",
+        "publicIpAddressName": "[concat(resourceGroup().name, 'PublicIP')]",
+        "NsgName": "[concat(variables('publicIpAddressName'), 'NSG')]",
+        "nicName": "[concat(resourceGroup().name, 'NIC')]",
+        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('VnetName'), variables('SubnetName'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-08-01",
+            "name": "[variables('VnetName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('AdressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('SubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('SubnetAdressPrefix')]"
+                        }
+                    }
+                ],
+                "enableDdosProtection": "[parameters('VnetDdosProtection')]"
+            }
+        },
+        {
+            "name": "[variables('publicIpAddressName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2018-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIpAllocationMethod": "[parameters('publicIpAddressType')]"
+            },
+            "sku": {
+                "name": "[parameters('publicIpAddressSku')]"
+            },
+            "tags": {}
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('NsgName')]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2018-03-01",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "RDPIN",
+                        "properties": {
+                            "description": "Allows RDP traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 200,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "WebPortIN",
+                        "properties": {
+                            "description": "Allows RDP traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "8080",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 210,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "WebPortOUT",
+                        "properties": {
+                            "description": "Allows RDP traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "8080",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 220,
+                            "direction": "Outbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/', variables('VnetName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIpAddressName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('NsgName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId ('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "nicName": {
+            "type": "string",
+            "value": "[variables('nicName')]"
+        }
+    }
+}
