@@ -2,20 +2,8 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "AdressPrefix": {
-            "type": "string"
-        },
-        "SubnetAdressPrefix": {
-            "type": "string"
-        },
-        "VnetDdosProtection": {
-            "type": "bool"
-        },
-        "publicIpAddressType": {
-            "type": "string"
-        },
-        "publicIpAddressSku": {
-            "type": "string"
+        "vnetConfig": {
+            "type": "object"
         }
     },
     "variables": {
@@ -35,18 +23,18 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[parameters('AdressPrefix')]"
+                        "[parameters('vnetConfig').AdressPrefix]"
                     ]
                 },
                 "subnets": [
                     {
                         "name": "[variables('SubnetName')]",
                         "properties": {
-                            "addressPrefix": "[parameters('SubnetAdressPrefix')]"
+                            "addressPrefix": "[parameters('vnetConfig').SubnetAdressPrefix]"
                         }
                     }
                 ],
-                "enableDdosProtection": "[parameters('VnetDdosProtection')]"
+                "enableDdosProtection": "[parameters('vnetConfig').VnetDdosProtection]"
             }
         },
         {
@@ -55,10 +43,10 @@
             "apiVersion": "2018-08-01",
             "location": "[resourceGroup().location]",
             "properties": {
-                "publicIpAllocationMethod": "[parameters('publicIpAddressType')]"
+                "publicIpAllocationMethod": "[parameters('vnetConfig').publicIpAddressType]"
             },
             "sku": {
-                "name": "[parameters('publicIpAddressSku')]"
+                "name": "[parameters('vnetConfig').publicIpAddressSku]"
             },
             "tags": {}
         },

@@ -50,6 +50,43 @@
                     }
                 }
             }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "VirtMachineLinkedTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "KeyVaultLinkedTemplate",
+                "SALinkedTemplate",
+                "NetworkingTemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'Win2016_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "virtualMachineSize": {
+                        "value": "[parameters('virtualmachinesize')]"
+                    },
+                    "nicName": {
+                        "value": "[reference('NetworkingTemplate').outputs.nicName.value]"
+                    },
+                    "AdminPassword": {
+                        "value": "[reference('KeyVaultLinkedTemplate').outputs.AdminPassword.value]"
+                    },
+                    "adminUsername":{
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "configurationFunction":{
+                        "value": "[parameters('configurationFunction')]"
+                    },
+                    "sastokenurl":{
+                        "value": "[parameters('sastokenurl')]"
+                    }
+                }
+            }
         }        
     ],
     "outputs": {

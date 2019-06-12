@@ -24,6 +24,25 @@
                 "SAAccountType": "Standard_LRS",
                 "SAKind": "StorageV2"
             }
+        },
+        "secretsObject": {
+            "value": {
+                "secrets": [
+                    {
+                        "secretName": "VMDeploySecretName",
+                        "secretValue": "Pa$$w0rd"
+                    }
+                ]
+            }
+        },
+        "virtualmachinesize": {
+            "value": "Standard_D2s_v3"
+        },
+        "adminUsername": {
+            "value": "azureuser"
+        },
+        "configurationFunction": {
+            "value": "dsc.ps1\\IIS_station"
         }
     }
 }

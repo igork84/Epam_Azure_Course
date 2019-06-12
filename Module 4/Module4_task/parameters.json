@@ -2,26 +2,20 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "AdressPrefix": {
-            "value": "10.0.0.0/16"
-        },
-        "SubnetAdressPrefix": {
-            "value": "10.0.0.0/24"
-        },
-        "VnetDdosProtection": {
-            "value": false
-        },
-        "publicIpAddressType": {
-            "value": "dynamic"
-        },
-        "publicIpAddressSku": {
-            "value": "basic"
+        "vnetConfig": {
+            "value": {
+                "vnetAdressPrefix": "10.0.0.0/16",
+                "SubnetAdressPrefix": "10.0.10.0/24",
+                "VnetDdosProtection": false,
+                "publicIpAddressType": "dynamic",
+                "publicIpAddressSku": "basic"
+            }
         },
         "ContributorId": {
-            "value": "32b08c07-406a-4b71-a101-de28c73741bd"
+            "value": "8b6f5ae2-d9c0-4d7a-a2c3-51fb55c07d27"
         },
         "OwnerId": {
-            "value": "99a00c7f-5b36-4a7e-a26b-dc9597d7f7b3"
+            "value": "550fa1d3-c8a0-4b0e-bb3a-8f3b1d74e707"
         },
         "secretsObject": {
             "value": {
@@ -33,17 +27,14 @@
                 ]
             }
         },
-        "SAAccountType": {
-            "value": "Standard_RAGRS"
-        },
-        "SAkind": {
-            "value": "StorageV2"
-        },
-        "SAAccessTier": {
-            "value": "hot"
-        },
-        "SAHttpsTraffic": {
-            "value": true
+        "SAConfig": {
+            "value": {
+                "SAAccountType": "Standard_LRS",
+                "SAkind": "StorageV2",
+                "SAAccessTier": "hot",
+                "SAHttpsTraffic": true
+
+            }
         },
         "virtualmachinesize": {
             "value": "Standard_D2s_v3"

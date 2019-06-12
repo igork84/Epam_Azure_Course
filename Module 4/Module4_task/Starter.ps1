@@ -45,19 +45,15 @@ Get-ChildItem -File -Recurse -Exclude "*.ps1" | Set-AzStorageBlobContent -Contai
 #Generating SAS Token
 write-mess -Text 'Generating SAS Token:'
 Set-AzCurrentStorageAccount -ResourceGroupName $RGName -Name $SA
-#$templateuri = New-AzStorageBlobSASToken -Container $ContainerName -Blob main.json -Permission r -ExpiryTime (Get-Date).AddHours(2.0) -FullUri
-$token = New-AzStorageContainerSASToken -Name $ContainerName -Permission r -ExpiryTime (Get-Date).AddMinutes(30.0)
+#$templateuri = New-AzStorageBlobSASToken -Container $ContainerName -Permission r -ExpiryTime (Get-Date).AddHours(2.0) 
+$token = New-AzStorageContainerSASToken -Name $ContainerName -Permission r -ExpiryTime (Get-Date).AddMinutes(30.0) -FullUri
 
 #Deploy key vaults and secrets
-# write-mess -Text "Deploy key vaults and secrets"
-# New-AzKeyVault -VaultName $keyVaultName -resourceGroupName $resourceGroupName -Location $location -EnabledForTemplateDeployment
-# $secretvalue = ConvertTo-SecureString 'hVFkk965BuUv' -AsPlainText -Force
-# $secret = Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'AccessPassword' -SecretValue $secretvalue
-# Set-AzKeyVaultAccessPolicy -VaultName $keyVaultName -UserPrincipalName $userPrincipalName -PermissionsToSecrets set,delete,get,list -
 
 #Deployment ARM Templates
 write-mess -Text "Deploying ARM Templates"
-New-AzResourceGroupDeployment -ResourceGroupName $RGName -TemplateFile ".\main.json" -TemplateParameterFile ".\parameters.json" -containerSasToken $token
+New-AzResourceGroupDeployment -ResourceGroupName $RGName -TemplateFile ".\main.json" -TemplateParameterFile ".\parameters.json" `
+-containerSasToken $token -sastokenuri $token -Verbose
 
 #Removing test Resource group
 write-mess -Text "Request for resource group removal`n
