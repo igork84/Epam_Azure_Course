@@ -2,8 +2,17 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "SAConfig": {
-            "type": "object"
+        "SAAccountType": {
+            "type": "string"
+        },
+        "SAkind": {
+            "type": "string"
+        },
+        "SAAccessTier": {
+            "type": "string"
+        },
+        "SAHttpsTraffic": {
+            "type": "bool"
         }
     },
     "variables": {
@@ -16,14 +25,14 @@
             "apiVersion": "2018-02-01",
             "location": "[resourceGroup().location]",
             "properties": {
-                "accessTier": "[parameters('SAConfig').SAAccessTier]",
-                "supportsHttpsTrafficOnly": "[parameters('SAConfig').SAHttpsTraffic]"
+                "accessTier": "[parameters('SAAccessTier')]",
+                "supportsHttpsTrafficOnly": "[parameters('SAHttpsTraffic')]"
             },
             "dependsOn": [],
             "sku": {
-                "name": "[parameters('SAConfig').SAAccountType]"
+                "name": "[parameters('SAAccountType')]"
             },
-            "kind": "[parameters('SAConfig').SAkind]"
+            "kind": "[parameters('SAkind')]"
         }
     ],
     "outputs": {

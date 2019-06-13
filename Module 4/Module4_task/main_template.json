@@ -2,8 +2,20 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "vnetConfig": {
-            "type": "object"
+        "AdressPrefix": {
+            "type": "string"
+        },
+        "SubnetAdressPrefix": {
+            "type": "string"
+        },
+        "VnetDdosProtection": {
+            "type": "bool"
+        },
+        "publicIpAddressType": {
+            "type": "string"
+        },
+        "publicIpAddressSku": {
+            "type": "string"
         },
         "ContributorId": {
             "type": "string"
@@ -14,8 +26,17 @@
         "secretsObject": {
             "type": "secureObject"
         },
-        "SAConfig": {
-            "type": "object"
+        "SAAccountType": {
+            "type": "string"
+        },
+        "SAkind": {
+            "type": "string"
+        },
+        "SAAccessTier": {
+            "type": "string"
+        },
+        "SAHttpsTraffic": {
+            "type": "bool"
         },
         "virtualmachinesize":{
             "type": "string"
@@ -28,13 +49,10 @@
         },
         "sastokenurl":{
             "type": "string"
-        },
-        "containerSasToken": {
-            "type": "string" 
-       }
+        }
     },
     "variables": {
-        "get_link": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/"
+        "git_link": "https://raw.githubusercontent.com/KstKrv/azure_arm/master/Module4_task/"
     },
     "resources": [
         {
@@ -44,24 +62,24 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(uri(variables('get_link'), 'vnet.json'), parameters('containerSasToken'))]",
+                    "uri": "[concat(variables('git_link'), 'vnet_template.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
                     "AdressPrefix": {
-                        "value": "[parameters('vnetConfig').AdressPrefix]"
+                        "value": "[parameters('AdressPrefix')]"
                     },
                     "SubnetAdressPrefix": {
-                        "value": "[parameters('vnetConfig').SubnetAdressPrefix]"
+                        "value": "[parameters('SubnetAdressPrefix')]"
                     },
                     "VnetDdosProtection": {
-                        "value": "[parameters('vnetConfig').VnetDdosProtection]"
+                        "value": "[parameters('VnetDdosProtection')]"
                     },
                     "publicIpAddressType": {
-                        "value": "[parameters('vnetConfig').publicIpAddressType]"
+                        "value": "[parameters('publicIpAddressType')]"
                     },
                     "publicIpAddressSku": {
-                        "value": "[parameters('vnetConfig').publicIpAddressSku]"
+                        "value": "[parameters('publicIpAddressSku')]"
                     }
                 }
             }
@@ -73,21 +91,21 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(uri(variables('get_link'), 'sa.json'), parameters('containerSasToken'))]",
+                    "uri": "[concat(variables('git_link'), 'storage_acc_template.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
                     "SAAccountType": {
-                        "value": "[parameters('SAConfig').SAAccountType]"
+                        "value": "[parameters('SAAccountType')]"
                     },
                     "SAAccessTier": {
-                        "value": "[parameters('SAConfig').SAAccessTier]"
+                        "value": "[parameters('SAAccessTier')]"
                     },
                     "SAHttpsTraffic": {
-                        "value": "[parameters('SAConfig').SAHttpsTraffic]"
+                        "value": "[parameters('SAHttpsTraffic')]"
                     },
                     "SAkind": {
-                        "value": "[parameters('SAConfig').SAkind]"
+                        "value": "[parameters('SAkind')]"
                     }
                 }
             }
@@ -99,7 +117,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(uri(variables('get_link'), 'KeyVault.json'), parameters('containerSasToken'))]",
+                    "uri": "[concat(variables('git_link'), 'KeyVault.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -127,7 +145,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(uri(variables('get_link'), 'Win2016_template.json'), parameters('containerSasToken'))]",
+                    "uri": "[concat(variables('git_link'), 'Win2016_template.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
