@@ -40,11 +40,17 @@ New-AzStorageContainer -Name $ContainerName -Context $ctx -Permission Blob
 #Upload ARM Template files in created container
 Get-ChildItem -File -Recurse -Exclude "*.ps1" | Set-AzStorageBlobContent -Container $ContainerName -Context $ctx
 
-#Recieving SAS-token
-# $accountKeys = Get-AzStorageAccountKey -ResourceGroupName $RGName -Name $SA
-# $storageContext = New-AzureStorageContext -StorageAccountName $SA -StorageAccountKey $accountKeys[0].Value
-$sastokenurl = New-AzStorageBlobSASToken -Container $ContainerName -Blob dsc.ps1.zip -Permission rwl -StartTime (Get-Date).AddHours(-1) `
+#Creating Pass Secret
+write-mess -Text 'Creating Password Secret'
+$PassRand = [system.web.security.membership]::GeneratePassword(10,2)
+$Pass = ConvertTo-SecureString "$PassRand" -AsPlainText -Force
+
+#Creating Sas Token
+write-mess -Text 'Creating Sas Token'
+$sastokenurl = New-AzStorageBlobSASToken -Container $ContainerName -Blob ".\linked\dsc.ps1.zip" -Permission rwl -StartTime (Get-Date).AddHours(-1) `
 -ExpiryTime (get-date).AddMonths(1) -FullUri -Context $ctx
 
+#Deploying ARM Templates
+write-mess -Text 'Deploying ARM Templates'
 New-AzResourceGroupDeployment -TemplateFile "main_template.json" `
--ResourceGroupName $RGName -sastokenurl $sastokenurl -TemplateParameterFile "main_params.json"
+-ResourceGroupName $RGName -sastokenurl $sastokenurl -TemplateParameterFile "main_params.json" -secretValue $Pass -Verbose

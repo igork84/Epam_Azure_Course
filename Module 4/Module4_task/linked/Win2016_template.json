@@ -5,24 +5,19 @@
         "nicName": {
             "type": "string"
         },
-        "virtualMachineSize": {
-            "type": "string"
-        },
-        "adminUsername": {
-            "type": "string"
+        "VMConfig": {
+            "type": "object"
         },
         "adminPassword": {
             "type": "securestring"
-        },
-        "configurationFunction": {
-            "type": "string"
         },
         "sastokenurl":{
             "type": "string"
         }
     },
     "variables": {
-        "virtualMachineName": "[concat(resourceGroup().name, 'VM')]"
+        "virtualMachineName": "[concat(resourceGroup().name, 'VM')]",
+        "link": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/"
     },
     "resources": [
         {
@@ -32,7 +27,7 @@
             "location": "[resourceGroup().location]",
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('virtualMachineSize')]"
+                    "vmSize": "[parameters('VMConfig').virtualMachineSize]"
                 },
                 "storageProfile": {
                     "osDisk": {
@@ -54,7 +49,7 @@
                 },
                 "osProfile": {
                     "computerName": "[variables('virtualMachineName')]",
-                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminUsername": "[parameters('VMConfig').adminUsername]",
                     "adminPassword": "[parameters('adminPassword')]",
                     "windowsConfiguration": {
                         "enableAutomaticUpdates": true,
@@ -77,10 +72,12 @@
                 "typeHandlerVersion": "2.19",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "ModulesUrl": "[parameters('sastokenurl')]",
-                    "ConfigurationFunction": "[parameters('configurationFunction')]"
+                    "Url": "[concat(variables('link'),'dsc.ps1.zip')]",
+                    "ConfigurationFunction": "[parameters('VMConfig').configurationFunction]"
                 },
-                "protectedSettings": null
+                "protectedSettings": {
+                    "configurationUrlSasToken": "[parameters('sastokenurl')]"
+                }
             }
         }
     ]

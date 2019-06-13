@@ -2,14 +2,11 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "ContributorId": {
-            "type": "string"
+        "SecConfig": {
+            "type": "object"
         },
-        "OwnerId": {
-            "type": "string"
-        },
-        "secretsObject": {
-            "type": "secureObject"
+        "secretValue": {
+            "type": "securestring"
         }
     },
     "variables": {
@@ -28,7 +25,7 @@
                 "tenantId": "[subscription().tenantId]",
                 "accessPolicies": [
                     {
-                        "objectId": "[parameters('OwnerId')]",
+                        "objectId": "[parameters('SecConfig').OwnerId]",
                         "tenantId": "[subscription().tenantId]",
                         "permissions": {
                             "keys": [
@@ -43,7 +40,7 @@
                         }
                     },
                     {
-                        "objectId": "[parameters('ContributorId')]",
+                        "objectId": "[parameters('SecConfig').ContributorId]",
                         "tenantId": "[subscription().tenantId]",
                         "permissions": {
                             "keys": [
@@ -66,10 +63,10 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(variables('keyVaultName'), '/', parameters('secretsObject').secrets[0].secretName)]",
+            "name": "[concat(variables('keyVaultName'), '/', parameters('SecConfig').secretName)]",
             "apiVersion": "2015-06-01",
             "properties": {
-                "value": "[parameters('secretsObject').secrets[0].secretValue]"
+                "value": "[parameters('secretValue')]"
             },
             "dependsOn": [
                 "[concat('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]"
@@ -79,7 +76,7 @@
     "outputs": {
         "AdminPassword": {
             "type": "string",
-            "value": "[parameters('secretsObject').secrets[0].secretValue]"
+            "value": "[parameters('secretValue')]"
         }
     }
 }
