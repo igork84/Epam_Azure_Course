@@ -1,0 +1,83 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "WAPPConfig": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "link": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "AppPlans",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'AppPlans_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "WAPPConfig": {
+                        "value": "[parameters('WAPPConfig')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "WebApps",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "AppPlans"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'WebApps_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "App1PlanName": {
+                        "value": "[reference('AppPlans').outputs.App1PlanName.value]"
+                    },
+                    "App2PlanName": {
+                        "value": "[reference('AppPlans').outputs.App2PlanName.value]"
+                    },
+                    "WAPPConfig": {
+                        "value": "[parameters('WAPPConfig')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "TrafficManager",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "WebApps"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'TrafficManager_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "WebApp1Name": {
+                        "value": "[reference('WebApps').outputs.WebApp1Name.value]"
+                    },
+                    "WebApp2Name": {
+                        "value": "[reference('WebApps').outputs.WebApp2Name.value]"
+                    },
+                    "WAPPConfig": {
+                        "value": "[parameters('WAPPConfig')]"
+                    }
+                }
+            }
+        }
+    ]
+}

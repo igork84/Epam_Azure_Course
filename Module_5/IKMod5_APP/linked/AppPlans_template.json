@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "WAPPConfig": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "App1PlanName": "[concat(resourceGroup().name, 'App1plan')]",
+        "App2PlanName": "[concat(resourceGroup().name, 'App2plan')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2016-09-01",
+            "name": "[variables('App1PlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[resourceGroup().location]",
+            "kind": "linux",
+            "properties": {
+                "name": "[variables('App1PlanName')]",
+                "workerSize": "[parameters('WAPPConfig').workerSize]",
+                "workerSizeId": "[parameters('WAPPConfig').workerSizeId]",
+                "numberOfWorkers": "[parameters('WAPPConfig').numberOfWorkers]",
+                "reserved": true,
+                "hostingEnvironment": "[parameters('WAPPConfig').hostingEnvironment]"
+            },
+            "sku": {
+                "Tier": "[parameters('WAPPConfig').sku]",
+                "Name": "[parameters('WAPPConfig').skuCode]"
+            }
+        },
+        {
+            "apiVersion": "2016-09-01",
+            "name": "[variables('App2PlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[parameters('WAPPConfig').seclocation]",
+            "kind": "linux",
+            "properties": {
+                "name": "[variables('App2PlanName')]",
+                "workerSize": "[parameters('WAPPConfig').workerSize]",
+                "workerSizeId": "[parameters('WAPPConfig').workerSizeId]",
+                "numberOfWorkers": "[parameters('WAPPConfig').numberOfWorkers]",
+                "reserved": true,
+                "hostingEnvironment": "[parameters('WAPPConfig').hostingEnvironment]"
+            },
+            "sku": {
+                "Tier": "[parameters('WAPPConfig').sku]",
+                "Name": "[parameters('WAPPConfig').skuCode]"
+            }
+        }
+    ],
+    "outputs": {
+        "App1PlanName": {
+            "type": "string",
+            "value": "[variables('App1PlanName')]"
+        },
+        "App2PlanName":{
+            "type": "string",
+            "value": "[variables('App2PlanName')]"
+        }
+    }
+}

@@ -1,0 +1,65 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "WebApp1Name": {
+            "type": "string"
+        },
+        "WebApp2Name": {
+            "type": "string"
+        },
+        "WAPPConfig": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "DNSName": "[concat('TraffMngr', uniqueString(resourceGroup().id))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-11-01",
+            "type": "Microsoft.Network/trafficManagerProfiles",
+            "name": "[variables('DNSName')]",
+            "location": "global",
+            "properties": {
+                "profileStatus": "Enabled",
+                "trafficRoutingMethod": "Performance",
+                "dnsConfig": {
+                    "relativeName": "[variables('DNSName')]",
+                    "ttl": 30
+                },
+                "monitorConfig": {
+                    "protocol": "HTTP",
+                    "port": 80,
+                    "path": "/"
+                },
+                "endpoints": [
+                    {
+                        "name": "newpoint1",
+                        "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+                        "properties": {
+                            "endpointStatus": "Enabled",
+                            "targetResourceId": "[resourceId('Microsoft.Web/sites', parameters('WebApp1Name'))]",
+                            "target": "[concat(parameters('WebApp1Name'), '.azurewebsites.net')]",
+                            "weight": 1,
+                            "priority": 3,
+                            "endpointLocation": "[resourceGroup().location]"
+                        }
+                    },
+                    {
+                        "name": "newpoint2",
+                        "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+                        "properties": {
+                            "endpointStatus": "Enabled",
+                            "targetResourceId": "[resourceId('Microsoft.Web/sites', parameters('WebApp2Name'))]",
+                            "target": "[concat(parameters('WebApp2Name'), '.azurewebsites.net')]",
+                            "weight": 1,
+                            "priority": 2,
+                            "endpointLocation": "[parameters('WAPPConfig').seclocation]"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

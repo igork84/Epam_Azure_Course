@@ -1,0 +1,57 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetName": {
+            "value": "IKVNetmod3",
+            "metadata": {
+                "description": "VNet name"
+              }
+        },
+        "vnetAddressPrefix": {
+            "value": "10.0.0.0/16",
+            "metadata": {
+                "description": "VNet Address prefix"
+              }
+        },
+        "subnet1AddressPrefix": {
+            "value": "10.0.10.0/24",
+            "metadata": {
+                "description": "Frontend Subnet Prefix"
+              }
+        },
+        "subnet1Name": {
+            "value": "FrontendSubnet",
+            "metadata": {
+                "description": "Frontend Subnet Name"
+              }
+        },
+        "subnet2AddressPrefix": {
+            "value": "10.0.20.0/24",
+            "metadata": {
+                "description": "Backend Subnet Prefix"
+              }
+        },
+        "subnet2Name": {
+            "value": "BackendSubnet",
+            "metadata": {
+                "description": "Backend Subnet Name"
+              }
+        },
+        "SAAccountName": {
+            "value": "iksamod3",
+            "metadata": {
+                "description": "Storage Account Name"
+            }
+        },
+        "SAAccountType": {
+            "value": "Standard_LRS",
+            "metadata": {
+                "description": "Storage Account type"
+            }
+        },
+        "SAKind": {
+            "value": "StorageV2"
+        }
+    }
+}
