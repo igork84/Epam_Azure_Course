@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "NetConfig": {
+            "value": {
+                "AdressPrefix": "10.0.0.0/16",
+                "SubnetAdressPrefix": "10.0.0.0/24",
+                "VnetDdosProtection": false,
+                "publicIpAddressType": "dynamic",
+                "publicIpAddressSku": "basic"
+            }
+        },
+        "virtualMachineSize": {
+            "value": "Standard_D2s_v3"
+        }
+    }
+}

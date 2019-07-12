@@ -1,0 +1,29 @@
+{  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "deployConfig": {
+            "value": {              
+                // aks 
+                "aksName": "AksEpamTest",
+                "dnsPrefix": "epamtest-dns",
+                "agentCount": 2,
+                "agentVMSize": "Standard_DS2_v2",
+                "servicePrincipalClientId": "3d3d83fb-3bfe-4492-9e6f-f0efe7ec74ce",                
+                "kubernetesVersion": "1.12.8",
+                "networkPlugin": "kubenet",
+                "enableRBAC": true,
+                "enableHttpApplicationRouting": true,
+                "vnetSubnetID": "/subscriptions/7fbb9f57-c81f-4114-a4ce-421706f73c58/resourceGroups/Test_Azure_course_HW8/providers/Microsoft.Network/virtualNetworks/Test_Azure_course_HW8-vnet/subnets/default",
+                "serviceCidr": "10.0.0.0/16",
+                "dnsServiceIP": "10.0.0.10",
+                "dockerBridgeCidr": "172.17.0.1/16",
+                
+                // for acr
+                "acrName": "acrepamtest"
+                 
+                
+
+            }
+        }
+    }   
+}

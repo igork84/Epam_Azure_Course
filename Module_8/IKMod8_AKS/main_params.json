@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "KBSConfig": {
+            "value": {
+                "agentCount": 2,
+                "agentVMSize": "Standard_DS2_v2",
+                "name": "agentpool",
+                "osDiskSizeGB": 35,
+                "maxPods": 35,
+                "osType": "Linux",
+                "storageProfile": "ManagedDisks",
+                "networkPlugin": "kubenet",
+                "httpApplicationRouting": true
+            }
+        },
+        "ACRConfig": {
+            "value": {
+                "name": "acrepamik",
+                "skuName": "Standard",
+                "skuTier": "Standard",
+                "adminUserEnabled": false
+            }
+        }
+    } 
+}

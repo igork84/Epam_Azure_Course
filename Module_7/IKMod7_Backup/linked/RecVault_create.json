@@ -1,0 +1,107 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "BackupConfig": {
+            "type": "object"
+        },
+        "vaultName": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "PolicyName": "MyCustomPolicy"
+       },
+    "resources": [
+        {
+            "apiVersion": "2015-03-15",
+            "name": "[parameters('vaultName')]",
+            "location": "[resourceGroup().location]",
+            "type": "Microsoft.RecoveryServices/vaults",
+            "sku": {
+                "name": "RS0",
+                "tier": "Standard"
+            },
+            "properties": {}
+        },
+        {
+            "apiVersion": "2016-06-01",
+            "name": "[concat(parameters('vaultName'), '/', variables('PolicyName'))]",
+            "type": "Microsoft.RecoveryServices/vaults/backupPolicies",
+            "dependsOn": [
+              "[concat('Microsoft.RecoveryServices/vaults/', parameters('vaultName'))]"
+            ],
+            "location": "[resourcegroup().location]",
+            "properties": {
+              "backupManagementType": "AzureIaasVM",
+              "instantRpRetentionRangeInDays": "[parameters('BackupConfig').instantRpRetentionRangeInDays]",
+              "schedulePolicy": {
+                "scheduleRunFrequency": "Daily",
+                "scheduleRunDays": null,
+                "scheduleRunTimes": "[parameters('BackupConfig').scheduleRunTimes]",
+                "schedulePolicyType": "SimpleSchedulePolicy"
+              },
+              "retentionPolicy": {
+                "dailySchedule": {
+                  "retentionTimes": "[parameters('BackupConfig').scheduleRunTimes]",
+                  "retentionDuration": {
+                    "count": "[parameters('BackupConfig').dailyRetentionDurationCount]",
+                    "durationType": "Days"
+                  }
+                },
+                "weeklySchedule": {
+                  "daysOfTheWeek": "[parameters('BackupConfig').daysOfTheWeek]",
+                  "retentionTimes": "[parameters('BackupConfig').scheduleRunTimes]",
+                  "retentionDuration": {
+                    "count": "[parameters('BackupConfig').weeklyRetentionDurationCount]",
+                    "durationType": "Weeks"
+                  }
+                },
+                "monthlySchedule": {
+                  "retentionScheduleFormatType": "Daily",
+                  "retentionScheduleDaily": {
+                    "daysOfTheMonth": [
+                      {
+                        "date": 1,
+                        "isLast": false
+                      }
+                    ]
+                  },
+                  "retentionScheduleWeekly": null,
+                  "retentionTimes": "[parameters('BackupConfig').scheduleRunTimes]",
+                  "retentionDuration": {
+                    "count": "[parameters('BackupConfig').monthlyRetentionDurationCount]",
+                    "durationType": "Months"
+                  }
+                },
+                "yearlySchedule": {
+                  "retentionScheduleFormatType": "Daily",
+                  "monthsOfYear": "[parameters('BackupConfig').monthsOfYear]",
+                  "retentionScheduleDaily": {
+                    "daysOfTheMonth": [
+                      {
+                        "date": 1,
+                        "isLast": false
+                      }
+                    ]
+                  },
+                  "retentionScheduleWeekly": null,
+                  "retentionTimes": "[parameters('BackupConfig').scheduleRunTimes]",
+                  "retentionDuration": {
+                    "count": "[parameters('BackupConfig').yearlyRetentionDurationCount]",
+                    "durationType": "Years"
+                  }
+                },
+                "retentionPolicyType": "LongTermRetentionPolicy"
+              },
+              "timeZone": "[parameters('BackupConfig').timeZone]"
+            }
+          }
+    ],
+    "outputs": {
+        "PolicyName": {
+            "type": "string", 
+            "value": "[variables('PolicyName')]"
+        }
+    }
+}

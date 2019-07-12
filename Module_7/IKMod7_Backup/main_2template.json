@@ -1,0 +1,69 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "NetConfig": {
+            "type": "object"
+        },
+        "virtualMachineSize": {
+            "type": "string"
+        },
+        "OsDiskUri": {
+            "type": "string"
+        },
+        "DataDiksUri": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "link": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "NetworkDeploy",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'net_2deploy.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "NetConfig": {
+                        "value": "[parameters('NetConfig')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "VMTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "NetworkDeploy"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'vm_2deploy.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "virtualMachineSize": {
+                        "value": "[parameters('virtualmachinesize')]"
+                    },
+                    "nicName": {
+                        "value": "[reference('NetworkDeploy').outputs.nicName.value]"
+                    },
+                    "OsDiskUri":{
+                        "value": "[parameters('OsDiskUri')]"
+                    },
+                    "DataDiksUri":{
+                        "value": "[parameters('DataDiksUri')]"
+                    }
+                }
+            }
+        }
+    ]
+}

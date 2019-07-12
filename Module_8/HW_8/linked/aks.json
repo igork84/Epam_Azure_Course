@@ -1,0 +1,108 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+      "parameters": {
+        
+      "deployConfig": {
+          "type": "object"
+      },
+      "location": {
+          "type": "string",
+          "defaultValue": "[resourceGroup().location]",
+          "metadata": {
+              "description": "The location of AKS resource."
+          }
+      },
+      "servicePrincipalClientSecret": {
+        "type": "securestring"
+      }
+  },
+  "variables": {
+    "resourceName": "[parameters('deployConfig').aksName]",
+    "dnsPrefix": "[parameters('deployConfig').dnsPrefix]",
+    "agentCount": "[parameters('deployConfig').agentCount]",
+    "agentVMSize": "[parameters('deployConfig').agentVMSize]",
+    "servicePrincipalClientId": "[parameters('deployConfig').servicePrincipalClientId]",    
+    "kubernetesVersion": "[parameters('deployConfig').kubernetesVersion]",
+    "networkPlugin": "[parameters('deployConfig').networkPlugin]",
+    "enableRBAC": "[parameters('deployConfig').enableRBAC]",
+    "enableHttpApplicationRouting": "[parameters('deployConfig').enableHttpApplicationRouting]",
+    "vnetSubnetID": "[parameters('deployConfig').vnetSubnetID]",
+    "serviceCidr": "[parameters('deployConfig').serviceCidr]",
+    "dnsServiceIP": "[parameters('deployConfig').dnsServiceIP]",
+    "dockerBridgeCidr": "[parameters('deployConfig').dockerBridgeCidr]"   
+    
+  },
+  "resources": [
+      {
+          "apiVersion": "2019-04-01",
+          "dependsOn": [
+              "Microsoft.Network/virtualNetworks/Test_Azure_course_HW8-vnet"              
+          ],
+          "type": "Microsoft.ContainerService/managedClusters",
+          "location": "[parameters('location')]",
+          "name": "[variables('resourceName')]",
+          "properties": {
+              "kubernetesVersion": "[variables('kubernetesVersion')]",
+              "enableRBAC": "[variables('enableRBAC')]",
+              "dnsPrefix": "[variables('dnsPrefix')]",
+              "agentPoolProfiles": [
+                  {
+                      "name": "agentpool",
+                      "osDiskSizeGB": 0,                      
+                      "count": "[variables('agentCount')]",
+                      "vmSize": "[variables('agentVMSize')]",
+                      "osType": "Linux",
+                      "storageProfile": "ManagedDisks",
+                      "vnetSubnetID": "[variables('vnetSubnetID')]"
+                  }
+              ],
+              "servicePrincipalProfile": {
+                  "ClientId": "[variables('servicePrincipalClientId')]",
+                  "Secret": "[parameters('servicePrincipalClientSecret')]"
+              },
+              "networkProfile": {
+                  "networkPlugin": "[variables('networkPlugin')]",
+                  "serviceCidr": "[variables('serviceCidr')]",
+                  "dnsServiceIP": "[variables('dnsServiceIP')]",
+                  "dockerBridgeCidr": "[variables('dockerBridgeCidr')]"
+              },
+              "addonProfiles": {
+                  "httpApplicationRouting": {
+                      "enabled": "[variables('enableHttpApplicationRouting')]"
+                  }
+              }
+          },
+          "tags": {}
+      },
+      {
+          "apiVersion": "2019-02-01",
+          "name": "Test_Azure_course_HW8-vnet",
+          "type": "Microsoft.Network/virtualNetworks",
+          "location": "[resourceGroup().location]",
+          "properties": {
+              "subnets": [
+                  {
+                      "name": "default",
+                      "id": "/subscriptions/7fbb9f57-c81f-4114-a4ce-421706f73c58/resourceGroups/Test_Azure_course_HW8/providers/Microsoft.Network/virtualNetworks/Test_Azure_course_HW8-vnet/subnets/default",
+                      "properties": {
+                          "addressPrefix": "10.240.0.0/16"
+                      }
+                  }
+              ],
+              "addressSpace": {
+                  "addressPrefixes": [
+                      "10.0.0.0/8"
+                  ]
+              }
+          },
+          "tags": {}
+      }
+  ],
+  "outputs": {
+      "aksName": {
+          "type": "string",
+          "value": "[variables('resourceName')]"
+      }
+  }
+}

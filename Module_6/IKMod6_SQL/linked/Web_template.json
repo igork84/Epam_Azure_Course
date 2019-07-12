@@ -1,0 +1,70 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "WEBConfig": {
+            "type": "object"
+        },
+        "SecConfig": {
+            "type": "object"
+        },
+        "secretsValue": {
+            "type": "securestring"
+        },
+        "databaseName": {
+            "type": "string"
+        },
+        "serverName": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "AppPlanName": "[concat(resourceGroup().name, 'AppPlan')]",
+        "WebApp1Name": "[concat('WebApp', uniqueString(resourceGroup().id))]",
+        "ConnectionString": "[concat('Database=', parameters('databaseName'), ';Data Source=', concat(parameters('serverName'),'.database.windows.net'), ';User Id=', parameters('SecConfig').secretName ,'@', parameters('serverName') ,';Password=',parameters('secretsValue'))]"
+    },
+    "resources":  [
+        {
+            "apiVersion": "2015-08-01",
+            "name": "[variables('AppPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[resourceGroup().location]",
+            "kind": "",
+            "properties": {
+                "name": "[variables('AppPlanName')]",
+                "workerSize": "[parameters('WEBConfig').workerSize]",
+                "workerSizeId": "[parameters('WEBConfig').workerSizeId]",
+                "numberOfWorkers": "[parameters('WEBConfig').numberOfWorkers]",
+                "reserved": false,
+                "hostingEnvironment": "[parameters('WEBConfig').hostingEnvironment]"
+            },
+            "sku": {
+                "Tier": "[parameters('WEBConfig').sku]",
+                "Name": "[parameters('WEBConfig').skuCode]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2016-08-01",
+            "kind": "app",
+            "name": "[variables('WebApp1Name')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[variables('AppPlanName')]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('AppPlanName'))]",
+                "siteConfig": {
+                    "appSettings": [],
+                    "connectionStrings": [
+                        {
+                            "name": "IKDBConnection",
+                            "ConnectionString": "[variables('ConnectionString')]",
+                            "type": "SQLAzure"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

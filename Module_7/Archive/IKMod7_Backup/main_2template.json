@@ -1,0 +1,93 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "AdressPrefix": {
+            "type": "string"
+        },
+        "SubnetAdressPrefix": {
+            "type": "string"
+        },
+        "VnetDdosProtection": {
+            "type": "bool"
+        },
+        "publicIpAddressType": {
+            "type": "string"
+        },
+        "publicIpAddressSku": {
+            "type": "string"
+        },
+        "virtualMachineSize": {
+            "type": "string"
+        },
+        "OsDiskUri": {
+            "type": "string"
+        },
+        "DataDiksUri": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "git_link": "https://raw.githubusercontent.com/KstKrv/azure_arm/master/Module7_task/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "NetworkDeploy",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'net_2deploy.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "AdressPrefix": {
+                        "value": "[parameters('AdressPrefix')]"
+                    },
+                    "SubnetAdressPrefix": {
+                        "value": "[parameters('SubnetAdressPrefix')]"
+                    },
+                    "VnetDdosProtection": {
+                        "value": "[parameters('VnetDdosProtection')]"
+                    },
+                    "publicIpAddressType": {
+                        "value": "[parameters('publicIpAddressType')]"
+                    },
+                    "publicIpAddressSku": {
+                        "value": "[parameters('publicIpAddressSku')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "VMTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "NetworkDeploy"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('git_link'), 'vm_2deploy.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "virtualMachineSize": {
+                        "value": "[parameters('virtualmachinesize')]"
+                    },
+                    "nicName": {
+                        "value": "[reference('NetworkDeploy').outputs.nicName.value]"
+                    },
+                    "OsDiskUri":{
+                        "value": "[parameters('OsDiskUri')]"
+                    },
+                    "DataDiksUri":{
+                        "value": "[parameters('DataDiksUri')]"
+                    }
+                }
+            }
+        }
+    ]
+}

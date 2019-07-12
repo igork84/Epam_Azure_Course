@@ -1,0 +1,91 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachineSize": {
+            "type": "string"
+        },
+        "OsDiskUri": {
+            "type": "string"
+        },
+        "DataDiksUri": {
+            "type": "string"
+        },
+        "nicName": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "virtualMachineName": "NewRecoveredVM"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2017-03-30",
+            "name": "[concat(variables('virtualMachineName'), '_OSdisk')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "creationData": {
+                    "createOption": "Import",
+                    "sourceUri": "[parameters('OsDiskUri')]"
+                },
+                "osType": "Windows"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2017-03-30",
+            "name": "[concat(variables('virtualMachineName'), '_Datadisk')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "creationData": {
+                    "createOption": "Import",
+                    "sourceUri": "[parameters('DataDiksUri')]"
+                }
+            }
+        },
+        {
+            "name": "[variables('virtualMachineName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2017-03-30",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat(variables('virtualMachineName'), '_Datadisk')]",
+                "[concat(variables('virtualMachineName'), '_OSdisk')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "NewRecoveredVM_OSDisk",
+                        "caching": "ReadWrite",
+                        "osType": "Windows",
+                        "createOption": "Attach",
+                        "managedDisk": {
+                            "id": "[resourceId('Microsoft.Compute/disks', concat(variables('virtualMachineName'), '_OSDisk'))]"
+                        }
+                    },
+                    "dataDisks": [
+                        {
+                            "name": "NewRecoveredVM_Datadisk",
+                            "lun": 0,
+                            "createOption": "Attach",
+                            "managedDisk": {
+                                "id": "[resourceId('Microsoft.Compute/disks', concat(variables('virtualMachineName'), '_Datadisk'))]"
+                            }
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('nicName'))]"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,104 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "NetSAConfig": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "VnetName": "[concat(resourceGroup().name, 'Vnet')]",
+        "SubnetName": "[concat(variables('VnetName'), 'Subnet')]",
+        "publicIpAddressName": "[concat(resourceGroup().name, 'PublicIP')]",
+        "nicName": "[concat(resourceGroup().name, 'NIC')]",
+        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('VnetName'), variables('SubnetName'))]",
+        "StorageAccName": "[tolower(concat(resourceGroup().name, uniqueString(resourceGroup().id)))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-08-01",
+            "name": "[variables('VnetName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('NetSAConfig').AdressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('SubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('NetSAConfig').SubnetAdressPrefix]"
+                        }
+                    }
+                ],
+                "enableDdosProtection": "[parameters('NetSAConfig').VnetDdosProtection]"
+            }
+        },
+        {
+            "name": "[variables('publicIpAddressName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2018-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIpAllocationMethod": "[parameters('NetSAConfig').publicIpAddressType]"
+            },
+            "sku": {
+                "name": "[parameters('NetSAConfig').publicIpAddressSku]"
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/', variables('VnetName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIpAddressName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId ('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[variables('StorageAccName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "accessTier": "[parameters('NetSAConfig').SAAccessTier]",
+                "supportsHttpsTrafficOnly": "[parameters('NetSAConfig').SAHttpsTraffic]"
+            },
+            "dependsOn": [],
+            "sku": {
+                "name": "[parameters('NetSAConfig').SAAccountType]"
+            },
+            "kind": "[parameters('NetSAConfig').SAkind]"
+        }
+    ],
+    "outputs": {
+        "nicName": {
+            "type": "string",
+            "value": "[variables('nicName')]"
+        },
+        "StorageAccName": {
+            "type": "string",
+            "value": "[variables('StorageAccName')]"
+        }
+    }
+}

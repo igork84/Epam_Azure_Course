@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hellofileiharkuvaldzin
+spec:
+  selector:
+    matchLabels:
+      app: hellofileiharkuvaldzin
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: hellofileiharkuvaldzin
+    spec:
+      containers:
+      - name: hellofileiharkuvaldzin
+        image: acrnameik.azurecr.io/samples/hellofileiharkuvaldzin
+        ports:
+        - containerPort: 80

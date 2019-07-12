@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: friendlyhelloalex
+spec:
+  selector:
+    matchLabels:
+      app: friendlyhelloalex
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: friendlyhelloalex
+    spec:
+      containers:
+      - name: friendlyhelloalex
+        image: acrepamtest.azurecr.io/samples/friendlyhelloalex
+        ports:
+        - containerPort: 80

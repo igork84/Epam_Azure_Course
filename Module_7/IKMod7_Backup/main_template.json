@@ -1,0 +1,151 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SecretValue": {
+            "type": "securestring"
+        },
+        "KVConfig": {
+            "type": "object"
+        },
+        "NetSAConfig": {
+            "type": "object"
+        },
+        "VMConfig": {
+            "type": "object"
+        },
+        "BackupConfig": {
+            "type": "object"
+        },
+        "utcShortValue": {
+            "type": "string",
+            "defaultValue": "[utcNow()]"
+        }
+    },
+    "variables": {
+        "link": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/",
+        "vaultName": "[concat('RSV', parameters('utcShortValue'), uniqueString(resourceGroup().id, deployment().name))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "KeyVaultTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'KeyVault_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "KVConfig": {
+                        "value": "[parameters('KVConfig')]"
+                    },
+                    "SecretValue": {
+                        "value": "[parameters('SecretValue')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "NetSATemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'Net_SA_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "NetSAConfig": {
+                        "value": "[parameters('NetSAConfig')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "RecVaultTemplateCreate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'RecVault_create.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "BackupConfig": {
+                        "value": "[parameters('BackupConfig')]"
+                    },
+                    "vaultName": {
+                        "value": "[variables('vaultName')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "VMTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "KeyVaultTemplate",
+                "NetSATemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'VM_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "KVConfig": {
+                        "value": "[parameters('KVConfig')]"
+                    },
+                    "VMConfig": {
+                        "value": "[parameters('VMConfig')]"
+                    },
+                    "nicName": {
+                        "value": "[reference('NetSATemplate').outputs.nicName.value]"
+                    },
+                    "SecretValue": {
+                        "value": "[parameters('SecretValue')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "RecVaultTemplateAddVM",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "RecVaultTemplateCreate",
+                "VMTemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'RecVault_addvm.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "virtualMachineName":{
+                        "value": "[reference('VMTemplate').outputs.virtualMachineName.value]"
+                    },
+                    "vaultName": {
+                        "value": "[variables('vaultName')]"
+                    },
+                    "PolicyName": {
+                        "value": "[reference('RecVaultTemplateCreate').outputs.PolicyName.value]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "StorageAccName":{
+            "type": "string",
+            "value": "[reference('NetSATemplate').outputs.storageAccName.value]"
+        }
+    }
+}

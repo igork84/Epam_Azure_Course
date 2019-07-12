@@ -1,0 +1,35 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SecConfig": {
+            "value": {
+                "ContributorId": "7a2ce12a-3dae-43b9-adbc-299dc5307552",
+                "OwnerId": "550fa1d3-c8a0-4b0e-bb3a-8f3b1d74e707",
+                "secretName": "sqladmin"
+            }
+        },
+        "SQLConfig": {
+            "value": {
+                "allowAzureIps": true,
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": 2147483648,
+                "zoneRedundant": false,
+                "tier": "Basic",
+                "skuName": "Basic"
+
+            }
+        },
+        "WEBConfig": {
+            "value": {
+                "workerSize": "0",
+                "numberOfWorkers": "1",
+                "workerSizeId": "0",
+                "hostingEnvironment": "",
+                "sku": "Standard",
+                "skuCode": "S2",
+                "skuName": "S2"
+            }
+        }
+    }
+}

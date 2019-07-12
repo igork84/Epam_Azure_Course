@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ACRConfig": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "acrName": "[parameters('ACRConfig').name]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ContainerRegistry/registries",
+            "apiVersion": "2017-10-01",
+            "name": "[variables('acrName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('ACRConfig').skuName]",
+                "tier": "[parameters('ACRConfig').skuTier]"
+            },
+            "properties": {
+                "adminUserEnabled": "[parameters('ACRConfig').adminUserEnabled]"
+            }
+        }
+    ],
+    "outputs": {
+        "acrName": {
+          "type": "string",
+          "value": "[variables('acrName')]"
+        }
+      }
+}

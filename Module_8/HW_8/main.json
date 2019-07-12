@@ -1,0 +1,61 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",    
+    "parameters": {
+        "deployConfig": {
+            "type": "object"
+        },   
+        "secretValue": {
+            "type": "securestring"
+        }
+        
+    }, 
+    "variables": {
+       "templaitslink": "https://hw8storageblob.blob.core.windows.net/tempconthw8/linked/"     
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2018-05-01",
+            "name": "AksTemplate",
+            "dependsOn": [                
+           ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {                    
+                    "uri": "[concat(variables('templaitslink'), 'aks.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "servicePrincipalClientSecret":{"value": "[parameters('secretValue')]"},                    
+                    "deployConfig":{"value": "[parameters('deployConfig')]"}                   
+                  }
+           }
+        },        
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2018-05-01",
+            "name": "AcrTemplate",
+            "properties": {
+                "mode": "Incremental",
+              "templateLink": {                    
+                    "uri": "[concat(variables('templaitslink'), 'acr.json')]",
+                    "contentVersion": "1.0.0.0"
+                },                
+                "parameters": {    
+                    "deployConfig":{"value": "[parameters('deployConfig')]"}                   
+                }
+            }
+        }
+    ],
+    "outputs": {         
+        "aksName": {
+            "type": "string",
+            "value": "[reference('AksTemplate').outputs.aksName.value]"
+        },        
+        "acrName": {
+            "type": "string",
+            "value": "[reference('AcrTemplate').outputs.acrName.value]"
+        }
+    }
+}

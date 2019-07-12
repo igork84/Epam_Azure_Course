@@ -1,0 +1,77 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SecConfig": {
+            "type": "object"
+        },
+        "secretsValue": {
+            "type": "securestring"
+        },
+        "SQLConfig": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "serverName": "[concat('SQLserv', uniqueString(resourceGroup().name))]",
+        "databaseName": "[concat(variables('serverName'), '_db')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "name": "[variables('serverName')]",
+            "properties": {
+                "administratorLogin": "[parameters('SecConfig').secretName]",
+                "administratorLoginPassword": "[parameters('secretsValue')]",
+                "version": "12.0"
+            },
+            "resources": [
+                {
+                    "condition": "[parameters('SQLConfig').allowAzureIps]",
+                    "apiVersion": "2015-05-01-preview",
+                    "type": "firewallRules",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+                    ],
+                    "name": "AllowAllWindowsAzureIps",
+                    "properties": {
+                        "endIpAddress": "0.0.0.0",
+                        "startIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2017-03-01-preview",
+            "location": "[resourceGroup().location]",
+            "name": "[concat(variables('serverName'), '/', variables('databaseName'))]",
+            "dependsOn": [
+                "[variables('serverName')]"
+            ],
+            "properties": {
+                "collation": "[parameters('SQLConfig').collation]",
+                "maxSizeBytes": "[parameters('SQLConfig').maxSizeBytes]",
+                "zoneRedundant": "[parameters('SQLConfig').zoneRedundant]",
+                "licenseType": ""
+            },
+            "sku": {
+                "name": "[parameters('SQLConfig').skuName]",
+                "tier": "[parameters('SQLConfig').tier]"
+            }
+        }
+    ],
+    "outputs": {
+        "databaseName": {
+            "type": "string",
+            "value": "[variables('databaseName')]"
+        },
+        "serverName": {
+            "type": "string",
+            "value": "[variables('serverName')]"
+        }
+    }
+}

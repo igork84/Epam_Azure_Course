@@ -1,0 +1,101 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SecConfig": {
+            "type": "object"
+        },
+        "secretsValue": {
+            "type": "securestring"
+        },
+        "SQLConfig": {
+            "type": "object"
+        },
+        "WEBConfig": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "link": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "KeyvaultTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'keyvault_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SecConfig": {
+                        "value": "[parameters('SecConfig')]"
+                    },
+                    "secretsValue": {
+                        "value": "[parameters('secretsValue')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "SQLTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "KeyvaultTemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'SQL_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SQLConfig": {
+                        "value": "[parameters('SQLConfig')]"
+                    },
+                    "SecConfig": {
+                        "value": "[parameters('SecConfig')]"
+                    },
+                    "secretsValue":{
+                        "value": "[parameters('secretsValue')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "WebTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "SQLTemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'Web_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SecConfig": {
+                        "value": "[parameters('SecConfig')]"
+                    },
+                    "WEBConfig": {
+                        "value": "[parameters('WEBConfig')]"
+                    },
+                    "secretsValue": {
+                        "value": "[parameters('secretsValue')]"
+                    },
+                    "databaseName":{
+                        "value": "[reference('SQLTemplate').outputs.databaseName.value]"
+                    },
+                    "serverName":{
+                        "value": "[reference('SQLTemplate').outputs.serverName.value]"
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hellofileiharkuvaldzin
+spec:  
+  selector:
+    app: hellofileiharkuvaldzin
+  ports:
+  - protocol: "TCP"
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
