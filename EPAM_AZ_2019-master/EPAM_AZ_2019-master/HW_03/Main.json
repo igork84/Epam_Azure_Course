@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "SAName": {
+      "type": "string"
+    },
+    "RGName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "templateBaseUrl": "[concat('https://',parameters('SAName'),'.blob.core.windows.net/',parameters('RGName'),'/')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "vnet",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'),'VMnet.json')]",
+          "contentVersion":"1.0.0.0"
+        },
+        "parametersLink": {
+            "uri":"[concat(variables('templateBaseUrl'),'Parameters.json')]",
+            "contentVersion":"1.0.0.0"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "sa",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'SA.json')]",
+          "contentVersion": "1.0.0.0"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "SAname" : {
+      "type" : "string",
+      "value": "[reference('sa').outputs.storageAccountName.value]"
+    },
+    "VnetName" : {
+      "type" : "string",
+      "value": "[reference('vnet').outputs.VMNetOutput.value]"
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VMConfig": {
+            "type": "object"
+        },
+        "Password": {
+            "type": "securestring"
+        },
+        "scriptUri": {
+            "type": "securestring"
+        },
+        "jobID": {
+            "type": "string"
+        },
+        "credentialName": {
+            "type": "string"
+        },
+        "appID": {
+            "type": "string"
+        },
+        "AppIdSecret": {
+            "type": "securestring"
+        }
+    },
+    "variables": {
+        "link": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "VirtMachineLinkedTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'VM_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "VMConfig": {
+                        "value": "[parameters('VMConfig')]"
+                    },
+                    "Password": {
+                        "value": "[parameters('Password')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-01-01",
+            "name": "AutomationAccountTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "VirtMachineLinkedTemplate"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'autoacc_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "credentialName": {
+                        "value": "[parameters('credentialName')]"
+                    },
+                    "AppIdSecret": {
+                        "value": "[parameters('AppIdSecret')]"
+                    },
+                    "jobId": {
+                        "value": "[parameters('jobID')]"
+                    },
+                    "scriptUri": {
+                        "value": "[parameters('scriptUri')]"
+                    },
+                    "appID": {
+                        "value": "[parameters('appID')]"
+                    }
+                }
+            }
+        }
+    ]
+}

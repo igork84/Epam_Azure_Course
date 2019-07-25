@@ -1,0 +1,49 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VMConfig": {
+            "type": "object"
+        },
+        "Password": {
+            "type": "securestring"
+        },
+        "registrationKey": {
+            "type": "securestring"
+        },
+        "registrationUrl": {
+            "type": "securestring"
+        }
+    },
+    "variables": {
+        "link": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "VirtMachineLinkedTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('link'), 'VM_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "VMConfig": {
+                        "value": "[parameters('VMConfig')]"
+                    },
+                    "Password": {
+                        "value": "[parameters('Password')]"
+                    },
+                    "registrationKey": {
+                        "value": "[parameters('registrationKey')]"
+                    },
+                    "registrationUrl": {
+                        "value": "[parameters('registrationUrl')]"
+                    }
+                }
+            }
+        }
+    ]
+}

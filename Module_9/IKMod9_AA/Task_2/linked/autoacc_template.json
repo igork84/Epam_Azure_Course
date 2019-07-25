@@ -1,0 +1,65 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sastokenurl": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "sku": "Free",
+        "accountname": "[concat('AutoAcc', uniqueString(resourceGroup().name))]",
+        "xNetworking:5.7.0:Name": "xNetworking",
+        "xNetworking:5.7.0:Uri": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/xNetworking.zip",
+        "xWebAdministration:2.6.0:Name": "xWebAdministration",
+        "xWebAdministration:2.6.0:Uri": "https://iksabase.blob.core.windows.net/ik-cont-main/linked/xWebAdministration.zip"
+    },
+    "resources": [
+        {
+            "name": "[variables('accountName')]",
+            "type": "Microsoft.Automation/automationAccounts",
+            "apiVersion": "2015-10-31",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [],
+            "tags": {},
+            "properties": {
+                "sku": {
+                    "name": "[variables('sku')]"
+                }
+            },
+            "resources": [
+                {
+                    "name": "[variables('xNetworking:5.7.0:Name')]",
+                    "type": "modules",
+                    "apiVersion": "2015-10-31",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', variables('accountName'))]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "contentLink": {
+                            "uri": "[concat(variables('xNetworking:5.7.0:Uri'), parameters('sastokenurl'))]"
+                        }
+                    }
+                },
+                {
+                    "name": "[variables('xWebAdministration:2.6.0:Name')]",
+                    "type": "modules",
+                    "apiVersion": "2015-10-31",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Automation/automationAccounts/', variables('accountName'))]",
+                        "[variables('xNetworking:5.7.0:Name')]"
+                    ],
+                    "tags": {},
+                    "properties": {
+                        "contentLink": {
+                            "uri": "[concat(variables('xWebAdministration:2.6.0:Uri'), parameters('sastokenurl'))]"
+                        }
+                    }
+                }
+            ]
+        }   
+    ]
+}

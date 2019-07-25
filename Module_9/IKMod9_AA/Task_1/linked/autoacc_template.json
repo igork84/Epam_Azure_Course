@@ -1,0 +1,133 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "credentialName": {
+      "type": "string"
+    },
+    "AppIdSecret": {
+      "type": "securestring"
+    },
+    "jobId": {
+      "type": "string"
+    },
+    "scriptUri": {
+      "type": "string"
+    },
+    "appID":{
+      "type": "string"
+    }
+  },
+  "variables": {
+    "runbookName": "Shutdown-ARM-VMs-Parallel",
+    "sku": "Free",
+    "accountname": "[concat('AutoAcc', uniqueString(resourceGroup().name))]",
+    "subscriptionId": "[subscription().subscriptionId]",
+    "tenantId": "[subscription().tenantId]"
+  },
+  "resources": [
+    {
+      "name": "[variables('accountName')]",
+      "type": "Microsoft.Automation/automationAccounts",
+      "apiVersion": "2015-10-31",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [],
+      "tags": {},
+      "properties": {
+        "sku": {
+          "name": "[variables('sku')]"
+        }
+      },
+      "resources": [
+        {
+          "name": "[variables('runbookName')]",
+          "type": "runbooks",
+          "apiVersion": "2015-10-31",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Automation/automationAccounts/', variables('accountName'))]"
+          ],
+          "properties": {
+            "runbookType": "Script",
+            "logProgress": false,
+            "logVerbose": false,
+            "publishContentLink": {
+              "uri": "[parameters('scriptUri')]",
+              "version": "1.0.0.0"
+            }
+          }
+        },
+        {
+          "name": "[parameters('credentialName')]",
+          "type": "credentials",
+          "apiVersion": "2015-10-31",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Automation/automationAccounts/', variables('accountName'))]"
+          ],
+          "properties": {
+            "userName": "[parameters('appID')]",
+            "password": "[parameters('AppIdSecret')]"
+          }
+        },
+        {
+          "name": "[concat(variables('accountname'), '/SubscriptionId')]",
+          "type": "Microsoft.Automation/automationAccounts/variables",
+          "apiVersion": "2015-10-31",
+          "dependsOn": [
+              "[resourceId('Microsoft.Automation/automationAccounts', variables('accountname'))]"
+          ],
+          "properties": {
+              "isEncrypted": false,
+              "value": "[concat('\"',variables('subscriptionId'),'\"')]"
+          }
+        },
+        {
+          "name": "[concat(variables('accountname'), '/TenantId')]",
+          "type": "Microsoft.Automation/automationAccounts/variables",
+          "apiVersion": "2015-10-31",
+          "dependsOn": [
+              "[resourceId('Microsoft.Automation/automationAccounts', variables('accountname'))]"
+          ],
+          "properties": {
+              "isEncrypted": false,
+              "value": "[concat('\"',variables('tenantId'),'\"')]"
+          }
+        },
+        {
+          "name": "[concat(variables('accountname'), '/CredentialName')]",
+          "type": "Microsoft.Automation/automationAccounts/variables",
+          "apiVersion": "2015-10-31",
+          "dependsOn": [
+              "[resourceId('Microsoft.Automation/automationAccounts', variables('accountname'))]"
+          ],
+          "properties": {
+              "isEncrypted": false,
+              "value": "[concat('\"',parameters('credentialName'),'\"')]"
+          }
+        },
+        {
+          "name": "[parameters('jobId')]",
+          "type": "jobs",
+          "apiVersion": "2015-10-31",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Automation/automationAccounts/', variables('accountName'))]",
+            "[variables('runbookName')]",
+            "[concat('Microsoft.Automation/automationAccounts/', variables('accountName'), '/variables/CredentialName')]",
+            "[concat('Microsoft.Automation/automationAccounts/', variables('accountName'), '/variables/TenantId')]",
+            "[concat('Microsoft.Automation/automationAccounts/', variables('accountName'), '/variables/SubscriptionId')]"
+          ],
+          "tags": {
+            "key": "value"
+          },
+          "properties": {
+            "runbook": {
+              "name": "[variables('runbookName')]"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

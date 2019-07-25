@@ -1,0 +1,77 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "SAName": {
+        "type": "string"
+      },
+      "SASToken": {
+        "type": "string"
+      },
+      "RGName": {
+        "type": "string"
+      },
+      "sshRSAPublicKey": {
+        "type": "securestring"
+      },
+      "servicePrincipalClientId": {
+          "type": "string"
+      },
+      "kaspassword": {
+          "type": "securestring"
+      }
+    },
+    "variables": {
+      "templateBaseUrl": "[concat('https://',parameters('SAName'),'.blob.core.windows.net/',parameters('RGName'),'/')]"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "name": "AKS",
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[concat(variables('templateBaseUrl'),'AKS.json', parameters('SASToken'))]",
+            "contentVersion":"1.0.0.0"
+          },
+          "parameters": {
+              "sshRSAPublicKey": {"value": "[parameters('sshRSAPublicKey')]"},
+              "dnsPrefix": {"value": "[parameters('RGName')]"},
+              "servicePrincipalClientId": {"value": "[parameters('servicePrincipalClientId')]"},
+              "servicePrincipalClientSecret": {"value": "[parameters('kaspassword')]"}
+          }
+        }
+      },
+      {
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "name": "AKR",
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[concat(variables('templateBaseUrl'),'AKR.json', parameters('SASToken'))]",
+            "contentVersion":"1.0.0.0"
+          },
+          "parameters": {
+             "acrName": {"value": "[concat(resourceGroup().name,'ACR')]"}
+          }
+        }
+      }
+    ],
+    "outputs": {
+      "acrLoginServer": {
+        "type": "string",
+        "value": "[reference('AKR').outputs.acrLoginServer.value]"
+      },
+      "controlPlaneFQDN": {
+        "type": "string",
+        "value": "[reference('AKS').outputs.controlPlaneFQDN.value]"
+      },
+      "AKSName": {
+        "type": "string",
+        "value": "[reference('AKS').outputs.AKSName.value]"
+      }
+    }
+  }
+  

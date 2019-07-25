@@ -1,0 +1,20 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VMConfig": {
+            "value": {
+                "AdressPrefix": "10.0.0.0/8",
+                "SubnetAdressPrefix": "10.0.0.0/24",
+                "VnetDdosProtection": false,
+                "publicIpAddressType": "dynamic",
+                "virtualMachineSize": "Standard_D2s_v3",
+                "username": "azureuser",
+                "counter": 2
+            }
+        },
+        "credentialName": {
+            "value": "AppRegistrationPassword"
+        }
+    }
+}

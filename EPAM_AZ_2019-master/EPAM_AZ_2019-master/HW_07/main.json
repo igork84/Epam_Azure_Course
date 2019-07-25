@@ -1,0 +1,111 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "SAName": {
+      "type": "string"
+    },
+    "SASToken": {
+      "type": "string"
+    },
+    "RGName": {
+      "type": "string"
+    },
+    "VaultID": {
+      "type": "string"
+    },
+    "RSVaultName": {
+      "type": "string",
+      "defaultValue": "HW07RserviceVault9"
+    }
+  },
+  "variables": {
+    "templateBaseUrl": "[concat('https://',parameters('SAName'),'.blob.core.windows.net/',parameters('RGName'),'/')]",
+    "keyVault-settings": {
+      "id": "[parameters('VaultID')]",
+      "vm01": {
+        "secretName": "vm01password"
+      }
+    }
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "vmnet",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'),'VMnet.json', parameters('SASToken'))]",
+          "contentVersion":"1.0.0.0"
+        },
+        "parametersLink": {
+            "uri":"[concat(variables('templateBaseUrl'),'Parameters.json', parameters('SASToken'))]",
+            "contentVersion":"1.0.0.0"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "VM01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'Vmachine.json', parameters('SASToken'))]",
+          "contentVersion": "1.0.0.1"
+        },
+        "parameters": {
+          "VNetSettings" : { "value": "[reference('vmnet').outputs.VMNetOutput.value]" },
+          "adminUsername" : {"value": "[concat('admin-', parameters('RGName'))]"},
+          "adminPassword": { 
+            "reference": {
+              "keyVault": {
+                "id": "[variables('keyVault-settings').id]"
+              },
+              "secretName": "[variables('keyVault-settings').vm01.secretName]"
+            }
+          },
+          "dnsLabelPrefix": {"value": "[concat(parameters('RGName'),'-machine01')]"}
+        }
+      },
+      "dependsOn": [
+        "vmnet"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "RS",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'Rservice.json', parameters('SASToken'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vaultName" : { "value": "[parameters('RSVaultName')]" },
+          "vmname": {"value": "[concat(resourceGroup().Name,'SimpleWinVM')]"}
+        }
+      },
+      "dependsOn": [
+        "VM01"
+      ]
+    }
+  ],
+  "outputs": {
+    "saname": {
+      "type": "string",
+      "value": "[reference('VM01').outputs.saname.value]"
+    },
+    "vmname": {
+      "type": "string",
+      "value": "[reference('VM01').outputs.vmname.value]"
+    },
+    "RSVaultName": {
+      "type": "string",
+      "value": "[parameters('RSVaultName')]"
+    }
+  }
+}

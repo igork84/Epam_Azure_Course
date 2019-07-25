@@ -26,8 +26,7 @@ $Location = "NorthEurope"
 $SA = "iksabase"
 $ContainerName = "ik-cont-main"
 $KVName = 'KeyVaultIK'
-$AppId = "d3298af1-285b-4589-9d23-f8696e1e0bc0"
-#$RGPath = '/subscriptions/6d272dbf-3653-4dbf-a97a-4a31ba45602f/resourceGroups/IKMod8RG/providers/'
+$AppId = 'd3298af1-285b-4589-9d23-f8696e1e0bc0'
 $Email = 'ihar_kuvaldzin@epam.com'
 
 #Create Resource Group
@@ -64,21 +63,17 @@ $ACRName = $Deploy.Outputs.acrName.Value
 #Getting Kubernetes Credentials and granting rights
 az aks get-credentials --resource-group $RGName --name $KBSName
 
-# #To registry
-# $Reg = $RGPath + 'Microsoft.ContainerRegistry/registries/' + $ACRName 
-# az role assignment create --assignee $AppId --scope $Reg --role acrpull
+#grant rights to scoups for deployment 
+$Scope1 = '/subscriptions/6d272dbf-3653-4dbf-a97a-4a31ba45602f/resourceGroups/IKMod8RG/providers/Microsoft.ContainerRegistry/registries/' + $AcrName 
+az role assignment create --assignee $AppId --scope $Scope1 --role acrpull
 
-# #To network
-# $Contr = $RGPath + 'Microsoft.Network/virtualNetworks/Test_Azure_course_HW8-vnet/subnets/default'
-# az role assignment create --assignee $AppId --scope $Contr --role 'Contributor'       
-
-### set in Kubernetes custom container registry creds
+$Scope2 = '/subscriptions/6d272dbf-3653-4dbf-a97a-4a31ba45602f/resourceGroups/MC_IKMod8RG_KBSsleqc6zvv6ykm_northeurope/providers/Microsoft.Network/virtualNetworks/aks-vnet-41444006'
+az role assignment create --assignee $AppId --scope $Scope2 --role 'Contributor' 
 
 $DockerRegistry = $AcrName + '.azurecr.io'
-kubectl create secret docker-registry acr-auth --docker-server $DockerRegistry --docker-username $AppId --docker-password $Pass --docker-email $Email
+kubectl create secret docker-registry acr-auth --docker-server $DockerRegistry --docker-username $AppId --docker-password $AppIdSecret --docker-email $Email
         
-### creating docker image an push in to custom container registry
-
+#Creating docker image an push in to custom container registry
 az acr login --name $AcrName
 
 docker build --tag=hellofileiharkuvaldzin .\Dockerfiles
@@ -87,17 +82,19 @@ $Tag = $DockerRegistry + '/samples/hellofileiharkuvaldzin'
 docker tag hellofileiharkuvaldzin $Tag
 docker push $Tag
 
-### Kubernetes deploy step
+#Kubernetes deploy step
 
 kubectl apply -f .\Kubernetes\Deployment.yaml 
 kubectl apply -f .\Kubernetes\Service.yaml
     
-#### Test kubectl deploy
-Write-Host "Starting Kubernetes deployment check operation. Please stand bye" -ForegroundColor Green
-Start-Sleep 120
-
+# Test kubectl deploy
+write-mess -Text "Testing Kubernetes deploying"
+Start-Sleep 150
+write-mess -Text 'Getting pods'
 kubectl get pods
+write-mess -Text 'Getting service info'
 kubectl describe service hellofileiharkuvaldzin
+write-mess -Text 'Getting service'
 kubectl get service hellofileiharkuvaldzin
 
 #Removing test resource group
